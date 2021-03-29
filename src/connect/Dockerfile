@@ -6,7 +6,8 @@ FROM cnfldemos/cp-server-connect-datagen:0.4.0-6.1.0
 USER root
 
 COPY --chown=appuser:appuser src/appuser-bin /home/appuser/bin
-COPY --chown=appuser:appuser src/pki-starter /etc/confluent/pki
+COPY --chown=appuser:appuser src/pki /etc/confluent/pki
+COPY --chown=appuser:appuser src/envoy /home/appuser/envoy
 
 RUN yum -y update
 RUN yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm

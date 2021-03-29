@@ -26,8 +26,12 @@ Inspect an image:
 docker image inspect 1cc232ed359c
 
 
-curl --verbose --cacert kc-ca.crt --cert kc-worker.crt --key kc-worker.key --pass mypass https://connect1:8443 
 envoy --log-path envoy.log -c envoy.yaml
+
+curl --verbose --cacert kc-ca.crt --cert kc-worker.crt --key kc-worker.key --pass mypass     https://connect1:8443
+curl --verbose --cacert kc-ca.crt                                           --user ok:test1  https://connect1:443
+
+curl --verbose --cacert kc-ca.crt --user ok:test1  https://connect1:443
 
 
 Localhost [Control Center](http://localhost:9021/)

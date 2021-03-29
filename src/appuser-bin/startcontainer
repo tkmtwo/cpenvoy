@@ -8,5 +8,10 @@ CACN=`hostname -f`
 
 CA_KEY=/etc/confluent/pki/kc-ca.key CA_CERT=/etc/confluent/pki/kc-ca.crt CA_PASSPHRASE=capass MY_DIR=/etc/confluent/pki MY_FILE=kc-worker MY_PASSPHRASE=mypass MY_SUBJECT="/CN=$CACN" MY_DAYS=365 /home/appuser/bin/ca-sign
 
+#
+#Figure out how best to run this at startup (init.d?)
+#
+envoy -c /home/appuser/envoy/front-envoy.yaml &
+
 /etc/confluent/docker/run
 
