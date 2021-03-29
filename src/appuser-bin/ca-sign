@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+
+set -eu
+
+
+CA_KEY=$CA_KEY
+CA_CERT=$CA_CERT
+CA_PASSPHRASE=$CA_PASSPHRASE
+
+MY_DIR=$MY_DIR
+MY_FILE=$MY_FILE
+MY_PASSPHRASE=$MY_PASSPHRASE
+MY_SUBJECT=$MY_SUBJECT
+MY_DAYS=$MY_DAYS
+
+
+
+#
+# Sample execution used during development:
+#
+# CA_KEY=x/tkmtwo.key CA_CERT=x/tkmtwo.crt CA_PASSPHRASE=capassphrase MY_DIR=x MY_FILE=alpha-tkmtwo MY_PASSPHRASE=mypassphrase MY_SUBJECT="/CN=alpha.tkmtwo.com" MY_DAYS=3650 ./ca-sign.sh
+# CA_KEY=x/kc-ca.key CA_CERT=x/kc-ca.crt CA_PASSPHRASE=capassphrase MY_DIR=x MY_FILE=connect1 MY_PASSPHRASE=mypassphrase MY_SUBJECT="/CN=connect1.tkmtwo.com" MY_DAYS=3650 ./ca-sign.sh
+#
+
+function file_exists_and_exit() {
+  echo "ca-sign: '$1' exists. Move or delete it before re-running."
+  exit 0
+}
+
+if [ -e $MY_DIR/$MY_FILE.key ]; then
+  file_exists_and_exit $MY_DIR/$MY_FILE.key
+fi
+
+if [ -e $MY_DIR/$MY_FILE.csr ]; then
+  file_exists_and_exit $MY_DIR/$MY_FILE.csr
+fi
+
+if [ -e $MY_DIR/$MY_FILE.crt ]; then
+  file_exists_and_exit $MY_DIR/$MY_FILE.crt
+fi
+
+
+
+
+
+#The client app
+openssl req -new -keyout $MY_DIR/$MY_FILE.key -out $MY_DIR/$MY_FILE.csr -subj "$MY_SUBJECT" -passout pass:$MY_PASSPHRASE
+
+#Sign it
+openssl x509 -req -in $MY_DIR/$MY_FILE.csr -CA $CA_CERT -CAkey $CA_KEY -CAcreateserial -out $MY_DIR/$MY_FILE.crt -days $MY_DAYS -sha256 -passin pass:$CA_PASSPHRASE
+
+echo ""
+echo "======================================================"
+echo "Certificates complete.  You can verify with:"
+echo "  openssl rsa -in $MY_DIR/$MY_FILE.key -text"
+echo "  openssl x509 -in $MY_DIR/$MY_FILE.crt -text"
+
+
+
+#
+# Comment this out if you don't want Java Keystores
+#
+#MY_STOREPASS=$MY_STOREPASS
+#keytool -keystore $MY_DIR/$MY_FILE-truststore.jks -alias $CA_CERT -import -file $CA_DIR/$CA_FILE.crt -noprompt -storepass $CA_STOREPASS
+
+
+#xxx
+
+#worked? openssl pkcs12 -export -in $MY_DIR/$MY_FILE.crt -inkey $MY_DIR/$MY_FILE.key -name $MY_FILE -out $MY_DIR/$MY_FILE.p12 -name $MY_FILE-key -passin pass:$MY_PASSPHRASE -passout pass:$MY_PASSPHRASE
+openssl pkcs12 -export -in <(cat $MY_DIR/$MY_FILE.crt $CA_CERT) -inkey $MY_DIR/$MY_FILE.key -name $MY_FILE -out $MY_DIR/$MY_FILE.p12 -name $MY_FILE-key -passin pass:$MY_PASSPHRASE -passout pass:$MY_PASSPHRASE
+
+#echo "p12 complete. Check with openssl pkcs12 -info -in $MY_DIR/$MY_FILE.p12"
+#echo "DO THIS"
+#echo "keytool -importkeystore -srckeystore $MY_DIR/$MY_FILE.p12 -destkeystore $MY_DIR/$MY_FILE.jks -srcstoretype pkcs12 -alias $MY_FILE-key -storepass $MY_PASSPHRASE -srcstorepass $MY_PASSPHRASE"
+
+keytool -importkeystore -srckeystore $MY_DIR/$MY_FILE.p12 -destkeystore $MY_DIR/$MY_FILE.jks -srcstoretype pkcs12 -alias $MY_FILE-key -storepass $MY_PASSPHRASE -srcstorepass $MY_PASSPHRASE
+
+#echo "keytool -keystore $MY_DIR/$MY_FILE.jks -alias $MY_FILE-cert -import -file $CA_CERT -keypass $MY_PASSPHRASE -storepass $MY_PASSPHRASE"
+
+#openssl pkcs12 -export -in somecert -inkey somekey  -name somename -out somefile-PKCS-12.p12
+#keytool -importkeystore -srckeystore server.p12 -destkeystore store.keys -srcstoretype pkcs12 -alias shared 
+#
+#cp ~/.plan sign.txt
+#openssl dgst -sha256 -sign $MY_DIR/$MY_FILE-key.pem -out signature.txt -passin pass:$MY_PASSPHRASE sign.txt
+#openssl dgst -sha256 -verify <(openssl x509 -in $MY_DIR/$MY_FILE-crt.pem -pubkey -noout) -signature signature.txt sign.txt
+#
+
+
+#CA_STOREPASS=$CA_STOREPASS

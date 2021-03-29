@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -eu
+
+
+CACN=`hostname -f`
+
+
+CA_KEY=/etc/confluent/pki/kc-ca.key CA_CERT=/etc/confluent/pki/kc-ca.crt CA_PASSPHRASE=capass MY_DIR=/etc/confluent/pki MY_FILE=kc-worker MY_PASSPHRASE=mypass MY_SUBJECT="/CN=$CACN" MY_DAYS=365 /home/appuser/bin/ca-sign
+
+/etc/confluent/docker/run
+

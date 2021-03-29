@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+set -eu
+
+
+#
+# Sample execution used during development:
+#
+# CA_DIR=x CA_FILE=tkmtwo CA_KEY_PASSPHRASE=capassphrase CA_SUBJECT="/CN=tkmtwo.com" CA_DAYS=365 ./ca-create.sh
+# CA_DIR=x CA_FILE=kc CA_KEY_PASSPHRASE=capassphrase CA_SUBJECT="/CN=kc.tkmtwo.com" CA_DAYS=365 ./ca-create.sh
+#
+
+CA_DIR=$CA_DIR
+CA_FILE=$CA_FILE
+CA_KEY_PASSPHRASE=$CA_KEY_PASSPHRASE
+CA_SUBJECT=$CA_SUBJECT
+CA_DAYS=$CA_DAYS
+
+
+#The CA
+openssl req -new -x509 -keyout $CA_DIR/$CA_FILE.key -out $CA_DIR/$CA_FILE.crt -days $CA_DAYS -subj "$CA_SUBJECT" -passout pass:$CA_KEY_PASSPHRASE
+
+echo ""
+echo "======================================================"
+echo "Certificates complete.  You can verify with:"
+echo "  openssl rsa -in $CA_DIR/$CA_FILE.key -text"
+echo "  openssl x509 -in $CA_DIR/$CA_FILE.crt -text"
+
+
+
+#
+# Comment this out if you don't want Java Keystores
+#
+keytool -keystore $CA_DIR/$CA_FILE.jks -alias $CA_FILE -import -file $CA_DIR/$CA_FILE.crt -noprompt -storepass $CA_KEY_PASSPHRASE
+
+echo ""
+echo "Keystore complete.  You can verify with:"
+echo "  keytool -list -keystore $CA_DIR/$CA_FILE.jks -v"
+
+
+
