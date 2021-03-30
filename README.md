@@ -34,6 +34,10 @@ curl --verbose --cacert kc-ca.crt                                           --us
 curl --verbose --cacert kc-ca.crt --user ok:test1  https://connect1:443
 
 
+curl --verbose --cacert kc-ca.crt --user ok:test1  https://connect1:443
+
+
+
 Localhost [Control Center](http://localhost:9021/)
 Localhost [ksqldb Server](http://localhost:8088/)
 Localhost [Connect1](http://localhost:10443/)
